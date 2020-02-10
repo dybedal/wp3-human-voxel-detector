@@ -1,0 +1,19 @@
+<launch>
+<arg name="filter_value"   default="127" />
+
+<!-- ================= Jetson1 ======================= -->
+<node pkg="wp3-decomp-multi" type="wp3-decomp-multi_node" name="pointcloud_merger">
+    <remap from="/pointcloud_merger/pointcloud1_in" to="/master/jetson1/kinect_decomp"/>
+    <remap from="/pointcloud_merger/pointcloud2_in" to="/master/jetson2/kinect_decomp"/>
+    <remap from="/pointcloud_merger/pointcloud3_in" to="/master/jetson3/kinect_decomp"/>
+    <remap from="/pointcloud_merger/pointcloud4_in" to="/master/jetson4/kinect_decomp"/>
+    <remap from="/pointcloud_merger/pointcloud5_in" to="/master/jetson5/kinect_decomp"/>
+    <remap from="/pointcloud_merger/pointcloud6_in" to="/master/jetson6/kinect_decomp"/>
+
+    <remap from="pointcloud_out" to="/master/kinect_merged"/>
+
+</node>
+
+
+
+</launch>

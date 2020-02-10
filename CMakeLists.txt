@@ -136,8 +136,6 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node 
   src/main.cpp
-  src/decompressor.cpp
-  src/octree_decompression.cpp
 )
 
 ## Rename C++ executable without prefix
