@@ -1,7 +1,7 @@
 close all;
 
 % Initialize ROS
-rosinit;
+%rosinit;
 
 % Subscribe to point cloud topic
 pc_sub = rossubscriber('/pointcloud_merger/pointcloud_out');
@@ -16,11 +16,15 @@ maxz = 3.5;
 
 dc = 0.04;
 
-rounds = 100;
+rounds = 1000;
+
+t = datestr(now());
+mkdir(t);
+            
 for r = 1:rounds
 	
 	% Get a point cloud
-	pointcloud = receive(pc_sub,10);
+	pointcloud = receive(pc_sub,100);
 
 	% Save to Matlab Point cloud format
 	pc = pointCloud(readXYZ(pointcloud),'intensity',readField(pointcloud,'intensity'));
@@ -80,8 +84,7 @@ for r = 1:rounds
 % 			image(cloud.XLimits,cloud.ZLimits,picXz,'CDataMapping','scaled');
 % 			set(gca,'YDir','normal');
 % 			colorbar;
-			t = datestr(now());
-			mkdir(t);
+			
 			imwrite(mat2gray(flip(picXz)), t + "/" + "picXz_" + num2str(r) + "_" + num2str(i) + ".jpg");
 
 % 			figure;
@@ -96,14 +99,14 @@ for r = 1:rounds
 
 
 	end
-	if numClusters > 0
-		pcseg = pointCloud(pc.Location(idx,:),'intensity',pc.Intensity(idx,:));
-		labelseg = labels(idx,:);
-
-		figure;
-		pcshow(pcseg.Location,labelseg);
-		colormap(hsv(j));
-	end
+% 	if numClusters > 0
+% 		pcseg = pointCloud(pc.Location(idx,:),'intensity',pc.Intensity(idx,:));
+% 		labelseg = labels(idx,:);
+% 
+% 		figure;
+% 		pcshow(pcseg.Location,labelseg);
+% 		colormap(hsv(j));
+% 	end
 
 end
 
