@@ -1,10 +1,9 @@
 close all;
 
-% Initialize ROS
-%rosinit;
-
 % Subscribe to point cloud topic
-pc_sub = rossubscriber('/pointcloud_merger/pointcloud_out');
+pc_sub = rossubscriber('/pointcloud_merger/pointcloud_out')
+pos_pub = rospublisher('visualization_marker','visualization_msgs/Marker')
+
 
 minx = 0.5;
 miny = 0.5;
@@ -16,21 +15,24 @@ maxz = 3.5;
 
 dc = 0.04;
 
-rounds = 100;
+rounds = 1000;
 
-t = datestr(now());
-mkdir(t);
-            
+net = baselineCNN;
+
+inputSize = net.Layers(1).InputSize;
+     
+seq = 0;
+
 for r = 1:rounds
 	
 	% Get a point cloud
-	pointcloud = receive(pc_sub,100);
+	pointcloud = receive(pc_sub,60);
 
 	% Save to Matlab Point cloud format
 	pc = pointCloud(readXYZ(pointcloud),'intensity',readField(pointcloud,'intensity'));
 
 	% Segment the point cloud
-	minDistance = 0.2;
+	minDistance = 0.20;
 	[labels,numClusters] = pcsegdist(pc,minDistance);
 
 	% Plot the different segments
@@ -41,20 +43,31 @@ for r = 1:rounds
 	% Find clusters with correct size for humans:
 	j = 0;
 
-
+    id = 0;
+    
+	
+    numClusters
+	
 	
 	for i = 1:numClusters
-
+		
 		[row,col] = find(labels==i);
-
-		cloud = pointCloud(pc.Location(row,:),'intensity',pc.Intensity(row,:));
+		
+		cloud = select(pc,row);
+		
 		xd = cloud.XLimits(2) - cloud.XLimits(1);
 		yd = cloud.YLimits(2) - cloud.YLimits(1);
 		zd = cloud.ZLimits(2) - cloud.ZLimits(1);
 
-
+        xpos = cloud.XLimits(2) - xd/2;
+        ypos = cloud.YLimits(2) - yd/2;
+        zpos = cloud.ZLimits(2) - zd/2;
+        
+		
 		if (0.2 < xd) && (xd < 2.0) && (0.2 < yd) && (yd < 2.0) && (0.5 < zd) && (zd < 2.5) && (cloud.ZLimits(1) < 0.5)
 
+			
+			
 			if(j == 0)
 				idx = row;
 			else
@@ -80,37 +93,80 @@ for r = 1:rounds
 				picYz(z,y) = picYz(z,y) + cloud.Intensity(k);
 			end
 
-% 			figure;
-% 			image(cloud.XLimits,cloud.ZLimits,picXz,'CDataMapping','scaled');
-% 			set(gca,'YDir','normal');
-% 			colorbar;
+
+            imX = mat2gray(flip(picXz));
+			imwrite(imX, 'tmp/tmpX.jpg');
+            
+            imY = mat2gray(flip(picYz));
+ 			imwrite(imY, 'tmp/tmpY.jpg');
+           
+            
+            imds = imageDatastore(fullfile('tmp'), 'FileExtensions','.jpg');
+
+
+            augimds = augmentedImageDatastore(inputSize(1:2),imds,...
+                'ColorPreprocessing', 'gray2rgb');
+
+            %tbf = rostime('now');
+            predictedLabel = classify(baselineCNN,augimds);
+            
+			%tn = rostime('now');
+			%tn - tbf
 			
-			imXz = mat2gray(flip(picXz));
-
-% 			figure;
-% 			image(cloud.YLimits,cloud.ZLimits,picYz,'CDataMapping','scaled');
-% 			set(gca,'YDir','normal');
-% 			colorbar;
-
-			imYz = mat2gray(flip(picYz));
-
-			predictionX = classify(baselineCNN,imXz)
-			predictionY = classify(baselineCNN,imYz)
-			
+			if all(predictedLabel == 'Human')
+                
+                %figure;
+      			%image(imX,'CDataMapping','scaled');
+      			%colorbar;
+                
+                %figure;
+      			%image(imY,'CDataMapping','scaled');
+      			%colorbar;
+                
+                id = id+1;
+                
+				msg = rosmessage(pos_pub);
+				
+				msg.Header.FrameId = 'world';
+                msg.Header.Stamp = rostime(0);
+				
+                msg.Header.Seq = seq;
+                seq = seq+1;
+               
+                msg.Ns = 'detections';
+                msg.Id = id;
+                msg.Type = 1;
+                msg.Action = 0;
+       
+				msg.Pose.Position.X = xpos;
+                msg.Pose.Position.Y = ypos;
+                msg.Pose.Position.Z = zpos;
+				
+                msg.Pose.Orientation.X = 0.0;
+                msg.Pose.Orientation.Y = 0.0;
+                msg.Pose.Orientation.Z = 0.0;
+                msg.Pose.Orientation.W = 1.0;
+				
+                msg.Scale.X = xd;
+                msg.Scale.Y = yd;
+                msg.Scale.Z = zd;
+                
+                msg.Color.R = 0.0;
+                msg.Color.G = 1.0;
+                msg.Color.B = 0.0;
+                msg.Color.A = 0.5;
+                
+                msg.Lifetime = rosduration(0.75);
+                
+                send(pos_pub,msg)
+								
+			end		
 			
 		end
 
-
 	end
-% 	if numClusters > 0
-% 		pcseg = pointCloud(pc.Location(idx,:),'intensity',pc.Intensity(idx,:));
-% 		labelseg = labels(idx,:);
-% 
-% 		figure;
-% 		pcshow(pcseg.Location,labelseg);
-% 		colormap(hsv(j));
-% 	end
+	
 
 end
 
-%rosshutdown;
+rosshutdown;

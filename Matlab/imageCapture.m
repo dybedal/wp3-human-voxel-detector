@@ -65,7 +65,7 @@ for r = 1:rounds
 			j = j+1;
 
 
-			% Make pics
+			% Make p
 			zxdim = [(ceil( (zd)/dc )+1) (ceil( (xd)/dc )+1)];
 			zydim = [(ceil( (zd)/dc )+1) (ceil( (yd)/dc )+1)];
 
