@@ -51,7 +51,8 @@ for r = 1:rounds
 	
     numClusters
 	
-	
+	idx = zeros(1);
+	lbl = zeros(1);
 	for i = 1:numClusters
 		
 		[row,col] = find(labels==i);
@@ -71,12 +72,14 @@ for r = 1:rounds
 
 			
 			
-			if(j == 0)
-				idx = row;
-			else
-				idx = [idx; row];
+ 			if(j == 0)
+ 				idx = row;
+				lbl = ones(size(row)).*j;
+ 			else
+ 				idx = [idx; row];
+				lbl = [lbl; ones(size(row)).*j];
 			end
-
+			
 
 			j = j+1;
 
@@ -175,6 +178,11 @@ for r = 1:rounds
 		end
 
 	end
+	
+	cld = select(pc,idx)
+	figure;
+	pcshow(cld.Location,lbl);
+	colormap(hsv(numClusters));
 	
 
 end
