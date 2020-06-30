@@ -4,6 +4,9 @@ close all;
 pc_sub = rossubscriber('/pointcloud_merger/pointcloud_out')
 pos_pub = rospublisher('visualization_marker','visualization_msgs/Marker')
 
+xdet = 0.0;
+ydet = 0.0;
+zdet = 0.0;
 
 minx = 0.5;
 miny = 0.5;
@@ -36,9 +39,9 @@ for r = 1:rounds
 	[labels,numClusters] = pcsegdist(pc,minDistance);
 
 	% Plot the different segments
-	% figure;
-	% pcshow(pc.Location,labels);
-	% colormap(hsv(numClusters));
+	figure;
+	pcshow(pc.Location,labels);
+	colormap(hsv(numClusters));
 
 	% Find clusters with correct size for humans:
 	j = 0;
@@ -115,13 +118,19 @@ for r = 1:rounds
 			
 			if all(predictedLabel == 'Human')
                 
-                %figure;
-      			%image(imX,'CDataMapping','scaled');
-      			%colorbar;
+				xdet = xpos
+				ydet = ypos
+				zdet = zpos
+                figure;
+      			image(imX,'CDataMapping','scaled');
+      			colorbar;
                 
-                %figure;
-      			%image(imY,'CDataMapping','scaled');
-      			%colorbar;
+                figure;
+      			image(imY,'CDataMapping','scaled');
+      			colorbar;
+				
+				figure;
+				pcshow(cloud);
                 
                 id = id+1;
                 
@@ -156,7 +165,8 @@ for r = 1:rounds
                 msg.Color.B = 0.0;
                 msg.Color.A = 0.5;
                 
-                msg.Lifetime = rosduration(0.75);
+                %msg.Lifetime = rosduration(0.75);
+				msg.Lifetime = rosduration(0);
                 
                 send(pos_pub,msg)
 								

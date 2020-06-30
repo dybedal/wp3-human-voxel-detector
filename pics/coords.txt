@@ -1,0 +1,19 @@
+xdet =
+
+  single
+
+    4.4200
+
+
+ydet =
+
+  single
+
+    5.2200
+
+
+zdet =
+
+  single
+
+    0.9400
