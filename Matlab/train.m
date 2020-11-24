@@ -14,7 +14,7 @@ augmenter = imageDataAugmenter( ...
     'RandXShear',[-20 20],...
     'RandYShear',[-20 20]);
 
-inputSize = [224,224,3];
+inputSize = [56,56,3];
 augimdsTraining = augmentedImageDatastore(inputSize(1:2),imdsTraining,...
     'DataAugmentation',augmenter,'ColorPreprocessing', 'gray2rgb');
 augimdsValidation = augmentedImageDatastore(inputSize(1:2),imdsValidation,...
@@ -23,7 +23,7 @@ augimdsTesting = augmentedImageDatastore(inputSize(1:2),imdsTesting,...
     'DataAugmentation',augmenter, 'ColorPreprocessing', 'gray2rgb');
 
 layers = [
-imageInputLayer([224 224 3])
+imageInputLayer(inputSize)
 
 convolution2dLayer(3,16,'Padding',1)
 batchNormalizationLayer

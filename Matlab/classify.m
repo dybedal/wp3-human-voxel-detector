@@ -39,17 +39,14 @@ for r = 1:rounds
 	[labels,numClusters] = pcsegdist(pc,minDistance);
 
 	% Plot the different segments
-	figure;
-	pcshow(pc.Location,labels);
-	colormap(hsv(numClusters));
+%	figure;
+%	pcshow(pc.Location,labels);
+%	colormap(hsv(numClusters));
 
 	% Find clusters with correct size for humans:
 	j = 0;
 
     id = 0;
-    
-	
-    numClusters
 	
 	idx = zeros(1);
 	lbl = zeros(1);
@@ -124,16 +121,16 @@ for r = 1:rounds
 				xdet = xpos
 				ydet = ypos
 				zdet = zpos
-                figure;
-      			image(imX,'CDataMapping','scaled');
-      			colorbar;
+                %figure;
+      			%image(imX,'CDataMapping','scaled');
+      			%colorbar;
                 
-                figure;
-      			image(imY,'CDataMapping','scaled');
-      			colorbar;
+                %figure;
+      			%image(imY,'CDataMapping','scaled');
+      			%colorbar;
 				
-				figure;
-				pcshow(cloud);
+				%figure;
+				%pcshow(cloud);
                 
                 id = id+1;
                 
@@ -179,10 +176,10 @@ for r = 1:rounds
 
 	end
 	
-	cld = select(pc,idx)
-	figure;
-	pcshow(cld.Location,lbl);
-	colormap(hsv(numClusters));
+	%cld = select(pc,idx)
+	%figure;
+	%pcshow(cld.Location,lbl);
+	%colormap(hsv(numClusters));
 	
 
 end
