@@ -25,7 +25,7 @@ using namespace message_filters;
 
 typedef pcl::PointXYZI PCL_PointType;
 typedef pcl::PointCloud<PCL_PointType> PointCloudType;
-typedef sync_policies::ApproximateTime<PointCloudType, PointCloudType, PointCloudType, PointCloudType, PointCloudType, PointCloudType> MySyncPolicy;
+typedef sync_policies::ApproximateTime<PointCloudType, PointCloudType, PointCloudType, PointCloudType> MySyncPolicy;
 
 
 // Setup
@@ -50,19 +50,16 @@ public:
 		pc2_sub{nh, "pointcloud2_in", 10},
 		pc3_sub{nh, "pointcloud3_in", 10},
 		pc4_sub{nh, "pointcloud4_in", 10},
-		pc5_sub{nh, "pointcloud5_in", 10},
-		pc6_sub{nh, "pointcloud6_in", 10},
-		sync{MySyncPolicy(100), pc1_sub, pc2_sub, pc3_sub, pc4_sub, pc5_sub, pc6_sub},
-		octree(0.04f)
+		sync{MySyncPolicy(100), pc1_sub, pc2_sub, pc3_sub, pc4_sub}
 
 	{
 		pub = nh.advertise<PointCloudType>("pointcloud_out", 1);
 	
-		sync.registerCallback(boost::bind(&PointCloudMerger::callback, this, _1, _2, _3, _4, _5, _6));
+		sync.registerCallback(boost::bind(&PointCloudMerger::callback, this, _1, _2, _3, _4));
 	}
 
 	void callback(const PointCloudType::ConstPtr & cloud1, const PointCloudType::ConstPtr & cloud2, const PointCloudType::ConstPtr & cloud3,
-		const PointCloudType::ConstPtr & cloud4, const PointCloudType::ConstPtr & cloud5, const PointCloudType::ConstPtr & cloud6)
+		const PointCloudType::ConstPtr & cloud4)
 	{
 	
 		PointCloudType in_cloud;
@@ -74,8 +71,6 @@ public:
 		in_cloud += *cloud2;
 		in_cloud += *cloud3;
 		in_cloud += *cloud4;
-		in_cloud += *cloud5;
-		in_cloud += *cloud6;
 
 		PointCloudType::Ptr cloud_grid (new PointCloudType());
 
@@ -92,31 +87,6 @@ public:
   		sor.setMeanK (15);
   		sor.setStddevMulThresh (1.0);
   		sor.filter (*cloud_filtered);
-
-
-		// Switch octree buffers: This resets octree but keeps previous tree structure in memory.
-		// octree.switchBuffers ();
-
-		// octree.setInputCloud (cloud_filtered);
-		// octree.addPointsFromInputCloud ();
-
-
-		// std::vector<int> newPointIdxVector;
-
-		// // Get vector of point indices from octree voxels which did not exist in previous buffer
-		// octree.getPointIndicesFromNewVoxels (newPointIdxVector);
-
-		// // Output points
-		// PointCloudType::Ptr output_cloud (new PointCloudType());
-		
-		// for (std::size_t i = 0; i < newPointIdxVector.size (); ++i)
-  // 			// add point to point cloud
-  // 			output_cloud->points.push_back(cloud_filtered->points[newPointIdxVector[i]]);
-		
-
-  // 		pcl_conversions::toPCL(ros::Time::now(), output_cloud->header.stamp);
-  // 		output_cloud->header.frame_id = in_cloud.header.frame_id;
-		// pub.publish(*output_cloud);
 
 
 		pcl_conversions::toPCL(ros::Time::now(), cloud_filtered->header.stamp);
@@ -138,13 +108,9 @@ private:
 	message_filters::Subscriber<PointCloudType> pc2_sub;
 	message_filters::Subscriber<PointCloudType> pc3_sub;
 	message_filters::Subscriber<PointCloudType> pc4_sub;
-	message_filters::Subscriber<PointCloudType> pc5_sub;
-	message_filters::Subscriber<PointCloudType> pc6_sub;
 
 	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
 	Synchronizer<MySyncPolicy> sync;
-
-	pcl::octree::OctreePointCloudChangeDetector<PCL_PointType> octree;
 	
 };
 
