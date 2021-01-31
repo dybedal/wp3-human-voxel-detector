@@ -16,7 +16,7 @@ maxz = 3.5;
 
 dc = 0.04;
 
-rounds = 1000;
+rounds = 1500;
 
 t = datestr(now());
 mkdir(t);
